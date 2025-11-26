@@ -1,6 +1,3 @@
-const dns = require('dns');
-dns.setServers(['8.8.8.8', '8.8.4.4']); 
-
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -66,7 +63,7 @@ app.get('/members', async (req, res) => {
     res.json(members);
 });
 
-// 5. Home Page (Fix for "Cannot GET /")
+// 5. Home Page
 app.get('/', (req, res) => {
     res.send("✅ Backend is Live & Connected to MongoDB!");
 });
