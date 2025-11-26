@@ -1,71 +1,56 @@
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
-const Member = require('./models/Member');
-const Event = require('./models/Event');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3001; // Keep this Cloud Port setting!
 
 app.use(cors());
 app.use(express.json());
 
-// DATABASE CONNECTION
-const MONGO_URI = 'mongodb+srv://ramasubham136_db_user:KPcE5nkmt27a3MiM@cluster0.jrxvtln.mongodb.net/?appName=Cluster0';
-
-mongoose.connect(MONGO_URI)
-    .then(() => console.log('✅ Connected to MongoDB!'))
-    .catch(err => console.error('❌ Connection Error:', err));
+// --- 💾 OFFLINE DATABASE ---
+let members = [
+    { _id: "1", name: "Rama Subham", role: "Backend Lead", year: 3 }
+];
+let events = [];
+let projects = [];
 
 // --- ROUTES ---
 
-// 1. Add Event
-app.get('/add-event', async (req, res) => {
-    try {
-        const newEvent = new Event({
-            title: "Winter Hackathon",
-            date: "December 20, 2025",
-            location: "Main Auditorium",
-            description: "A 24-hour coding challenge!"
-        });
-        await newEvent.save();
-        res.send("✅ Test Event Added to Database!");
-    } catch (err) {
-        res.status(500).send("Error: " + err.message);
-    }
+// 1. GET Members
+app.get('/members', (req, res) => res.json(members));
+
+// 2. ADD Member
+app.get('/add-test', (req, res) => {
+    members.push({ _id: Date.now().toString(), name: "New Member", role: "Recruit" });
+    res.send("✅ Member Added!");
 });
 
-// 2. Get Events
-app.get('/events', async (req, res) => {
-    const events = await Event.find();
-    res.json(events);
+// 3. GET Events
+app.get('/events', (req, res) => res.json(events));
+
+// 4. ADD Event
+app.get('/add-event', (req, res) => {
+    events.push({ 
+        _id: Date.now().toString(), 
+        title: "Hackathon 2025", 
+        date: "Dec 20" 
+    });
+    res.send("✅ Event Added!");
 });
 
-// 3. Add Member
-app.get('/add-test', async (req, res) => {
-    try {
-        const newMember = new Member({
-            name: "Rama Subham",
-            role: "Backend Lead",
-            email: "ramasubham136@gmail.com",
-            year: 3
-        });
-        await newMember.save();
-        res.send("✅ Test Member Added!");
-    } catch (err) {
-        res.status(500).send("Error: " + err.message);
-    }
+// 5. GET Projects
+app.get('/projects', (req, res) => res.json(projects));
+
+// 6. ADD Project
+app.post('/projects', (req, res) => {
+    const newProject = req.body;
+    projects.push(newProject);
+    res.json({ message: "Project Saved!", project: newProject });
 });
 
-// 4. Get Members
-app.get('/members', async (req, res) => {
-    const members = await Member.find();
-    res.json(members);
-});
-
-// 5. Home Page
+// 7. Home Page
 app.get('/', (req, res) => {
-    res.send("✅ Backend is Live & Connected to MongoDB!");
+    res.send("✅ Backend is Live (Offline Mode)");
 });
 
 app.listen(PORT, () => {
