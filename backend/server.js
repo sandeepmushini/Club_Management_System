@@ -1,5 +1,11 @@
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+
+// Import your Blueprints
+const Member = require('./models/Member');
+const Event = require('./models/Event');
+const Project = require('./models/Project');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -7,46 +13,73 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// --- 💾 OFFLINE DATABASE (MOCK DATA) ---
-let members = [
-    { _id: "1", name: "Rama Subham", role: "Backend Lead", email: "rama@test.com", year: 3 }
-];
-let events = [
-    { _id: "1", title: "Winter Hackathon", date: "Dec 20, 2025", location: "Auditorium", description: "Coding Challenge" }
-];
-let projects = [
-    { _id: "1", title: "Club Website", description: "Fullstack App", teamMembers: "Rama, Friend", link: "github.com/club" }
-];
+// --- DATABASE CONNECTION ---
+// 👇 PASTE YOUR REAL MONGODB LINK HERE (Inside the quotes)
+const MONGO_URI = 'mongodb+srv://ramasubham136_db_user:KPcE5nkmt27a3MiM@cluster0.jrxvt1n.mongodb.net/?appName=Cluster0';
+
+mongoose.connect(MONGO_URI)
+    .then(() => console.log('✅ Connected to MongoDB!'))
+    .catch(err => console.error('❌ Connection Error:', err));
 
 // --- ROUTES ---
 
 // 1. MEMBERS
-app.get('/members', (req, res) => res.json(members));
-app.post('/members', (req, res) => {
-    const newMember = { _id: Date.now().toString(), ...req.body };
-    members.push(newMember);
-    res.json({ message: "Member Saved!", member: newMember });
+app.get('/members', async (req, res) => {
+    const members = await Member.find();
+    res.json(members);
+});
+app.post('/members', async (req, res) => {
+    try {
+        const newMember = new Member(req.body);
+        await newMember.save();
+        res.json(newMember);
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // 2. EVENTS
-app.get('/events', (req, res) => res.json(events));
-app.post('/events', (req, res) => {
-    const newEvent = { _id: Date.now().toString(), ...req.body };
-    events.push(newEvent);
-    res.json({ message: "Event Saved!", event: newEvent });
+app.get('/events', async (req, res) => {
+    const events = await Event.find();
+    res.json(events);
+});
+app.post('/events', async (req, res) => {
+    try {
+        const newEvent = new Event(req.body);
+        await newEvent.save();
+        res.json(newEvent);
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // 3. PROJECTS
-app.get('/projects', (req, res) => res.json(projects));
-app.post('/projects', (req, res) => {
-    const newProject = { _id: Date.now().toString(), ...req.body };
-    projects.push(newProject);
-    res.json({ message: "Project Saved!", project: newProject });
+app.get('/projects', async (req, res) => {
+    const projects = await Project.find();
+    res.json(projects);
+});
+app.post('/projects', async (req, res) => {
+    try {
+        const newProject = new Project(req.body);
+        await newProject.save();
+        res.json(newProject);
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// 4. HOME
+// 4. TEST ROUTE (Quick check)
+app.get('/add-test', async (req, res) => {
+    try {
+        const newMember = new Member({
+            name: "Rama Subham",
+            role: "Backend Lead",
+            email: "rama@test.com",
+            year: 3
+        });
+        await newMember.save();
+        res.send("✅ Test Member Added to REAL Database!");
+    } catch (err) {
+        res.status(500).send("Error: " + err.message);
+    }
+});
+
 app.get('/', (req, res) => {
-    res.send("✅ Backend is Live (Offline Mode) - Ready for Frontend!");
+    res.send("✅ Backend is Live & Online!");
 });
 
 app.listen(PORT, () => {
